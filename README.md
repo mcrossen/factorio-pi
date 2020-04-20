@@ -38,7 +38,7 @@ You can try to run the server with `~/factorio/bin/x64/factorio`. You should get
 means that you're missing the required x86-64 dependancies to run this dynamically linked executable. To fix that you'll need to
 download the dependancies as a container image with the following command.
 ```
-sudo debootstrap --arch=amd64 --foreign stretch ~/factorio-runtime/
+sudo debootstrap --arch=amd64 --foreign stable ~/factorio-runtime/
 sudo cp /usr/bin/qemu-x86_64-static ~/factorio-runtime/usr/bin/
 ```
 This downloads a copy of the debian filesystem onto your pi along with all standard x86-64 libraries and dependancies. The
