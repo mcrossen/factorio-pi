@@ -22,7 +22,8 @@ sudo apt install systemd-container qemu-user-static debootstrap
 We'll also need to download the factorio headless server executable itself and extract it.
 ```
 wget https://www.factorio.com/get-download/stable/headless/linux64 -O ~/factorio-server.tar.xz
-tar -zJf ~/factorio-server.tar.xz -C ~/
+# or curl https://www.factorio.com/get-download/stable/headless/linux64 -L --output ~/factorio-server.tar.xz
+tar -xJf ~/factorio-server.tar.xz -C ~/
 rm ~/factorio-server.tar.xz
 mkdir ~/factorio/saves/
 ```
