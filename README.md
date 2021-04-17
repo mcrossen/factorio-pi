@@ -17,7 +17,7 @@ commands to install two packages. The first, systemd-container, is used to run c
 qemu-user-static, is used to run foreign executables like the factorio headless server. The third, debootstrap, is used to download container images.
 ```
 sudo apt update
-sudo apt install systemd-container qemu-user-static debootstrap
+sudo apt install systemd-container qemu-user-static qemu-utils
 ```
 We'll also need to download the factorio headless server executable itself and extract it.
 ```
@@ -39,8 +39,7 @@ You can try to run the server with `~/factorio/bin/x64/factorio`. You should get
 means that you're missing the required x86-64 dependancies to run this dynamically linked executable. To fix that you'll need to
 download the dependancies as a container image with the following command.
 ```
-sudo debootstrap --arch=amd64 --foreign stable ~/factorio-runtime/
-sudo cp /usr/bin/qemu-x86_64-static ~/factorio-runtime/usr/bin/
+sudo qemu-debootstrap --arch=amd64 stable ~/factorio-runtime/
 ```
 This downloads a copy of the debian filesystem onto your pi along with all standard x86-64 libraries and dependancies. The
 second command copies the emulator into the file tree for use in the containerized environment. Feel free to use a different
