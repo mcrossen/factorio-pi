@@ -3,7 +3,7 @@ These instructions can be used to run x86 programs on ARM architectures. For thi
 headless server on a raspberry pi running raspbian, but the general method should be adjustable to work for any x86 program on
 any ARM architecture running linux.
 
-**WARNING running factorio server in this way is unstable and showing a lot of segfaults**
+**WARNING running factorio server in this way is unstable and buggy and not ready for regular use. This guide is intended to be a mere proof of concept. My hope is that others will build and improve upon it.**
 
 ## problem
 The factorio headless linux server is only available for x86 machines but the raspberry pi is ARM. To run on ARM processors,
