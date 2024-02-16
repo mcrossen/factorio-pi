@@ -1,51 +1,78 @@
+
 # factorio-pi
-These instructions can be used to run x86 programs on ARM architectures. For this example, I will be installing an x86 factorio
-headless server on a raspberry pi running raspbian, but the general method should be adjustable to work for any x86 program on
-any ARM architecture running linux.
+[![Release](https://github.com/mcrossen/factorio-pi/workflows/Release/badge.svg)](https://github.com/mcrossen/factorio-pi/actions)
+[![Docker Pulls](https://img.shields.io/docker/pulls/markcrossen/factorio-pi.svg?maxAge=600)](https://hub.docker.com/r/markcrossen/factorio-pi/)
+[![Docker Stars](https://img.shields.io/docker/stars/markcrossen/factorio-pi.svg?maxAge=600)](https://hub.docker.com/r/markcrossen/factorio-pi/)
 
-**WARNING running factorio server in this way is unstable and buggy and not ready for regular use. This guide is intended to be a mere proof of concept. My hope is that others will build and improve upon it.**
+> [!WARNING]
+> running factorio server in this way is unstable, slow, and might crash your pi
 
-## problem
-The factorio headless linux server is only available for x86 machines but the raspberry pi is ARM. To run on ARM processors,
-like the raspberry pi, virtualization is required. Emulators like qemu-user-static work great for running statically linked
-binaries on foreign machines but they don't include all dependancies needed to run dynamically linked executables. The latter
-problem can be solved through containerization.
+## usage
+First, install docker on your raspberry pi
 
-## instructions
-First, we'll need to install some utilities. On your raspberry pi, open the 'terminal' application and run the following
-commands to install two packages. The first, systemd-container, is used to run containers on your pi. The second,
-qemu-user-static, is used to run foreign executables like the factorio headless server. The third, debootstrap, is used to download container images.
 ```
-sudo apt update
-sudo apt install systemd-container qemu-user-static qemu-utils debootstrap
+sudo apt install docker.io
 ```
-We'll also need to download the factorio headless server executable itself and extract it.
+
+Next, create a folder to hold your savegame and the autosaves. Transfer your
+existing save into it.
 ```
-wget https://www.factorio.com/get-download/stable/headless/linux64 -O ~/factorio-server.tar.xz
-# or curl https://www.factorio.com/get-download/stable/headless/linux64 -L --output ~/factorio-server.tar.xz
-tar -xJf ~/factorio-server.tar.xz -C ~/
-rm ~/factorio-server.tar.xz
-mkdir ~/factorio/saves/
+mkdir ~/factorio-saves/
+mv /path/to/existing/save.zip ~/factorio-saves/
 ```
-You should now notice a new folder called 'factorio' in your home directory. This contains the config and executable to run the
-factorio headless server. You'll probably want to change your server's name, description, and password from the default. To do
-that, copy the configuration template and open the file in nano to customize whichever fields you want. Press 'ctrl-x', then
-'y', then 'enter' to save and quit when you're done.
+
+Now create and run the docker container
 ```
-cp ~/factorio/data/server-settings.example.json ~/factorio/data/server-settings.json
-nano ~/factorio/data/server-settings.json
+sudo docker run -d \
+  -p 34197:34197/udp \
+  -p 27015:27015/tcp \
+  -v ~/factorio-saves:/home/factorio/saves \
+  --name factorio \
+  --restart=unless-stopped \
+  markcrossen/factorio-pi
 ```
-You can try to run the server with `~/factorio/bin/x64/factorio`. You should get an error like "No such file or directory". This
-means that you're missing the required x86-64 dependancies to run this dynamically linked executable. To fix that you'll need to
-download the dependancies as a container image with the following command.
+
+If you're new to docker, lets go over each argument to the above command:
+- `-d` run in 'detached' mode so it doesn't capture keyboard input
+- `-p 34197:34197/udp -p 27015:27015/tcp` the default network ports required to run
+factorio
+- `-v ~/factorio-saves:/home/factorio/saves` allow the container to read the folder
+where you placed your save
+- `-v ~/factorio-settings:/home/factorio/settings` allow the container to read the
+folder where you placed your custom server-settings.json
+- `--name factorio` names the container to make it easier to start and stop
+- `--restart=unless-stopped` restart the container if it crashes
+- `markcrossen/factorio-pi` the docker image to run that contains all dependencies
+
+To stop the server, run the following
 ```
-sudo qemu-debootstrap --arch=amd64 stable ~/factorio-runtime/ --variant=buildd
+sudo docker stop factorio
 ```
-This downloads a copy of the debian filesystem onto your pi along with all standard x86-64 libraries and dependancies. The
-second command copies the emulator into the file tree for use in the containerized environment. Feel free to use a different
-x86-64 image if you like. You can now run your factorio server inside this container.
+
+To [re]start the server, run the following
 ```
-sudo systemd-nspawn -D ~/factorio-runtime --bind=/home/$USER/factorio:/factorio /factorio/bin/x64/factorio --start-server-load-latest /factorio/saves/ --server-settings /factorio/data/server-settings.json
+sudo docker start factorio
 ```
-You can connect to your server in factorio using the ip address of your pi. For example, if your pi has ip address 10.0.0.2 then
-enter 10.0.0.2:34197 in the dialog box.
+
+## problems
+> Why is running factorio on a raspberry pi so hard?
+
+The factorio headless linux server is only available for x86 machines but the
+raspberry pi has an ARM CPU. To run on ARM processors, like the raspberry pi,
+virtualization is required.
+
+> Why is this slow?
+
+Using virtualization/emulators is slower than running factorio on a normal x86
+machine because the emulator has a large overhead.
+
+> Why do I need to install docker and run a container?
+
+Emulators like qemu-user-static work great for running
+statically linked binaries on foreign machines but they don't include all
+dependancies needed to run dynamically linked executables such as factorio. The
+latter problem can be solved by shipping all x86 dependencies alongside the emulator
+and executable. This is most easily done through containerization.
+
+## contributing
+Pull requests welcome!
