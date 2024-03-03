@@ -7,6 +7,18 @@
 > [!WARNING]
 > running factorio server in this way is unstable, slow, and might crash your pi
 
+## deprecated
+If your pi is running a 64 bit operating system, then it is highly recommend to
+first try using [factoriotools/factorio](https://hub.docker.com/r/factoriotools/factorio).
+To determine whether your pi is 64 bit, run the following from a terminal:
+```
+uname -m  # should say 'aarch64' for 64 bit operating system
+```
+
+If your pi is NOT 64 bit, then feel free to try the docker image from this repo.
+Ultimately both repos will have difficulties because factorio wasn't made to run
+on ARM hosts.
+
 ## usage
 First, install docker on your raspberry pi
 
@@ -28,7 +40,6 @@ sudo docker run -d \
   -p 27015:27015/tcp \
   -v ~/factorio-saves:/home/factorio/saves \
   --name factorio \
-  --restart=unless-stopped \
   markcrossen/factorio-pi
 ```
 
@@ -41,7 +52,6 @@ where you placed your save
 - `-v ~/factorio-settings:/home/factorio/settings` allow the container to read the
 folder where you placed your custom server-settings.json
 - `--name factorio` names the container to make it easier to start and stop
-- `--restart=unless-stopped` restart the container if it crashes
 - `markcrossen/factorio-pi` the docker image to run that contains all dependencies
 
 To stop the server, run the following
